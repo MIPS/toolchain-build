@@ -58,6 +58,7 @@ host_baseargs = @host_baseargs@
 GCC_MIN_VERSION_4_3_0:=@GCC_MIN_VERSION_4_3_0@
 GCC_MIN_VERSION_4_5_0:=@GCC_MIN_VERSION_4_5_0@
 GCC_MIN_VERSION_4_8_0:=@GCC_MIN_VERSION_4_8_0@
+GCC_POST_VERSION_4_X:=@GCC_POST_VERSION_4_X@
 GDB_MIN_VERSION_7_2:=@GDB_MIN_VERSION_7_2@
 BINUTILS_MIN_VERSION_2_21:=@BINUTILS_MIN_VERSION_2_21@
 GOLD_MIN_VERSION_2_21:=@GOLD_MIN_VERSION_2_21@
@@ -68,7 +69,7 @@ BUILD_ANDROID_GCC:=@BUILD_ANDROID_GCC@
 GDB_TARGET:=@GDB_TARGET@
 
 # We need to figure out how to get to top level source directory from
-# a package build directory. 
+# a package build directory.
 # For host modules, accept cache file option, or specification as blank.
 
 
@@ -157,7 +158,7 @@ export	CC_FOR_TARGET="$(TARGET_GCC_BUILDDIR)/gcc/xgcc \
 # We need -Os as the overrides below interfere with --enable-target-optspace.
 # We also need -mandroid for for target libraries to pass linking test
 # in configuration.
-# 
+#
 # To build libstdc++ with RTTI and exceptions do:
 #
 #export CFLAGS_FOR_TARGET=-fexceptions
@@ -306,7 +307,7 @@ BINUTILS_CONFIG_ARGS=--prefix=$(prefix) \
 	--target=${cur_target} --host=${cur_host} --build=${cur_build} \
 	$(baseargs) --disable-shared --disable-nls
 ifeq ($(ENABLE_GRAPHITE),yes)
-BINUTILS_CONFIG_ARGS+= --with-cloog=${CLOOG_DIR} --with-isl=${ISL_DIR} --with-isl=${ISL_DIR} --with-gmp=${GMP_DIR} \
+BINUTILS_CONFIG_ARGS+= --with-cloog=${CLOOG_DIR} --with-isl=${ISL_DIR} --with-gmp=${GMP_DIR} \
 	--disable-ppl-version-check --disable-cloog-version-check --disable-isl-version-check $(CLOOG_BACKEND)
 # links to the static C++ runtime to avoid depending on the host version
 ifneq ($(host_os),darwin)
@@ -513,7 +514,7 @@ install-target-gcc: install-target-gcc-gcc $(install-target-gcc-multilibs)
 # We use the full gcc configure rules.
 .PHONY: build-target-minimal-gcc install-target-minimal-gcc
 ifeq ("$(GCC_MIN_VERSION_4_3_0)","yes")
-MINIMAL_GCC_BUILD_TARGETS:= gcc target-libgcc 
+MINIMAL_GCC_BUILD_TARGETS:= gcc target-libgcc
 else
 MINIMAL_GCC_BUILD_TARGETS:= gcc
 endif
@@ -739,7 +740,7 @@ stmp-build-host-cloog: stmp-config-host-cloog
 	$(STAMP) $@
 build-host-cloog: stmp-build-host-cloog
 
-ifeq ($(ENABLE_GRAPHITE),yes)
+ifeq ($(ENABLE_GRAPHITE)$(GCC_POST_VERSION_4_X),yesno)
 stmp-install-host-cloog: stmp-build-host-cloog
 	$(MAKE) -C ${CLOOG_VERSION} install-libLTLIBRARIES \
 		install-pkgincludeHEADERS

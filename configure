@@ -575,6 +575,7 @@ NEWLIB_VERSION
 GCC_MIN_VERSION_4_8_0
 GCC_MIN_VERSION_4_5_0
 GCC_MIN_VERSION_4_3_0
+GCC_POST_VERSION_4_X
 GCC_VERSION
 GOLD_MIN_VERSION_2_21
 GOLD_VERSION
@@ -2449,11 +2450,17 @@ if test -f "${gcc_version_file}"; then
   else
     GCC_MIN_VERSION_4_8_0="no"
   fi
+  if test "$GCC_MAJOR" -gt 4 ; then
+    GCC_POST_VERSION_4_X=yes
+  else
+    GCC_POST_VERSION_4_X=no
+  fi
 else
   # No version file, assume it is trunk
   GCC_MIN_VERSION_4_3_0="yes"
   GCC_MIN_VERSION_4_5_0="yes"
   GCC_MIN_VERSION_4_8_0="yes"
+  GCC_POST_VERSION_4_X="yes"
 fi
 
 
@@ -2667,7 +2674,7 @@ fi
 fi
 
 
-if test "$ENABLE_GRAPHITE" == "yes"; then
+if [ "$ENABLE_GRAPHITE" == "yes" -a "$GCC_POST_VERSION_4_X" == "no" ]; then
 # cloog-ppl or cloog version (default is 0.15.9)
 # cloog is only used for gcc 4.5+ with graphite optimization.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking cloog version" >&5
@@ -4178,4 +4185,3 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
-
