@@ -419,26 +419,30 @@ stmp-config-target-gcc: stmp-install-host-mpc
 GCC_CONFIG_ARGS += --with-mpc=$(MPC_DIR)
 endif
 
-# For gcc 4.5 and 4.6 with graphite optimization, cloog and ppl are required.
 # For gcc 4.8+ with graphite optimization, cloog and isl are required.
-ifeq ($(ENABLE_GRAPHITE),yes)
 GCC_CONFIG_ARGS += --with-cloog=${CLOOG_DIR} --with-isl=${ISL_DIR} --with-ppl=${PPL_DIR} \
 	--disable-ppl-version-check --disable-cloog-version-check --disable-isl-version-check $(CLOOG_BACKEND)
-# links to the static C++ runtime to avoid depending on the host version
-ifneq ($(host_os),darwin)
-GCC_CONFIG_ARGS += \
-	'--with-host-libstdcxx=-static-libgcc \
-	 -Wl,-Bstatic,-lstdc++,-Bdynamic -lm'
+
+# Link to the static C++ runtime to avoid depending on the host version.
+ifeq ($(host_os),darwin)
+    # In darwin ld doesn't allow both -static and -dynamic.  Instead, we rely on
+    # explicit "-isysroot $(mac_sdk_root)
+    # -mmacosx-version-min=$(mac_sdk_version)" to establish minimal sdk version
+    #  toolchain will run
+    HOST_LIBSTDCXX := -static-libgcc -lstdc++ -lm
+else ifneq ($(cur_host),$(cur_build))
+    # For Windows, prefer static libraries. We don't want to have to ship any
+    # extra DLLs in the NDK (specifically, this is being added to avoid run time
+    # dependency on libwinpthread-1.dll). We'll still have dynamic dependencies
+    # on things like kernel32.dll, but that's expected.
+    # http://b/24911020
+    HOST_LIBSTDCXX := -static-libgcc -static-libstdc++ -lstdc++ -lm -static
 else
-# In darwin ld doesn't allow both -static and -dynamic.  Instead, we rely on explicit
-# "-isysroot $(mac_sdk_root) -mmacosx-version-min=$(mac_sdk_version)" to establish
-# minimal sdk version toolchain will run
-GCC_CONFIG_ARGS += '--with-host-libstdcxx=-static-libgcc -lstdc++ -lm'
+    # For whatever reason Linux doesn't actually use a static libstdc++ with
+    # just -static-libstdc++...
+    HOST_LIBSTDCXX := -static-libgcc -Wl,-Bstatic,-lstdc++,-Bdynamic -lm
 endif
-else
-# Disable ppl, isl and cloog just in case the host have them install.
-GCC_CONFIG_ARGS += --without-ppl --without-cloog --without-isl
-endif
+GCC_CONFIG_ARGS += '--with-host-libstdcxx=$(HOST_LIBSTDCXX)'
 
 # Add Android specific gcc options.
 # FIXME: These should be overridable by configure options.
