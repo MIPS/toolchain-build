@@ -468,7 +468,7 @@ endif
 
 ifeq ($(target_cpu),x86_64)
 GCC_CONFIG_ARGS += --with-arch=x86-64 --with-tune=intel --with-fpmath=sse \
-                   --with-multilib-list=m32,m64,mx32
+                   --with-multilib-list=m32,m64
 endif
 
 # ARM specific options.
